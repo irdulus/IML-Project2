@@ -1,0 +1,26 @@
+Number of clusters,ari,sil,dbs,ch,dataset,clusteringAlg,affinity,linkage
+2,0.004,0.127,3.245,38.434,vote,km,None,None
+3,0.387,0.413,1.095,568.052,vote,km,None,None
+4,0.353,0.373,1.066,491.315,vote,km,None,None
+5,0.285,0.376,1.03,431.745,vote,km,None,None
+6,0.243,0.333,1.092,429.043,vote,km,None,None
+2,0.434,0.513,0.735,689.617,vote,agg,euclidean,ward
+3,0.481,0.398,1.153,513.839,vote,agg,euclidean,ward
+4,0.309,0.31,1.226,437.919,vote,agg,euclidean,ward
+5,0.33,0.33,1.145,412.394,vote,agg,euclidean,ward
+6,0.325,0.328,1.121,402.117,vote,agg,euclidean,ward
+2,0.635,0.539,0.683,766.176,vote,agg,euclidean,complete
+3,0.544,0.388,0.874,471.493,vote,agg,euclidean,complete
+4,0.481,0.348,0.939,398.52,vote,agg,euclidean,complete
+5,0.485,0.269,1.203,348.461,vote,agg,euclidean,complete
+6,0.316,0.254,1.323,345.135,vote,agg,euclidean,complete
+2,0.496,0.513,0.698,659.714,vote,agg,euclidean,average
+3,0.387,0.398,1.162,541.492,vote,agg,euclidean,average
+4,0.4,0.385,1.039,443.399,vote,agg,euclidean,average
+5,0.402,0.302,1.029,360.826,vote,agg,euclidean,average
+6,0.429,0.308,1.037,354.311,vote,agg,euclidean,average
+2,0.001,-0.11,1.26,1.24,vote,agg,euclidean,single
+3,-0.001,-0.321,2.228,0.683,vote,agg,euclidean,single
+4,-0.006,-0.396,2.011,1.189,vote,agg,euclidean,single
+5,-0.003,-0.397,1.859,1.04,vote,agg,euclidean,single
+6,-0.005,-0.397,1.86,0.885,vote,agg,euclidean,single
