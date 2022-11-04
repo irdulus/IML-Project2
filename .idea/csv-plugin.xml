@@ -17,13 +17,6 @@
             </Attribute>
           </value>
         </entry>
-        <entry key="\results\hyp_tsne.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value="," />
-            </Attribute>
-          </value>
-        </entry>
         <entry key="\results\vote.csv">
           <value>
             <Attribute>
@@ -31,14 +24,14 @@
             </Attribute>
           </value>
         </entry>
-        <entry key="\results\vote_pca.csv">
+        <entry key="\results\vote_fa.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
             </Attribute>
           </value>
         </entry>
-        <entry key="\results\vote_tsne.csv">
+        <entry key="\results\vote_pca.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />

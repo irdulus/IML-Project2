@@ -24,7 +24,7 @@ class PCA:
         self.mean_vector = self.X.mean(axis = 0, keepdims=True)
         self.cov_mat = np.cov(self.X.T)
 
-        if verbose:
+        if self.verbose:
             print('-------------------')
             print('Covariance matrix:')
             print(self.cov_mat)
@@ -33,7 +33,7 @@ class PCA:
         # eigenvalue/eigenvector decomposition of the covariance matrix
         self.eigval, self.eigvec = np.linalg.eig(self.cov_mat)
 
-        if verbose:
+        if self.verbose:
             print('Eigenvectors:')
             print(self.eigvec)
             print('###################')
@@ -44,7 +44,7 @@ class PCA:
 
         # order eigenvecors by eigenvalue
         tuples_eig = sorted([(self.eigval[i], self.eigvec[:, i]) for i in range(len(self.eigval))], reverse=True)
-        if verbose:
+        if self.verbose:
             for eigenvalue, eigenvector in tuples_eig:
                 print('Eigenvalue: ', eigenvalue)
                 print('Eigenvector: ', eigenvector)

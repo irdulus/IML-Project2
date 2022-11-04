@@ -73,7 +73,9 @@ def save_log(config, eval, dim_reduc):
 
 def make_plots(config, metric = 'sil'):
     metrics_info = {'sil': {'lim':(-1, 1), 'name':'Silhouette Score'},
-                    'ari': {'lim':(-0.1, 1), 'name':'ARI'}}
+                    'dbs': {'name':'Davies Bouldin Index'},
+                    'ari': {'lim':(-0.1, 1), 'name':'ARI'},
+                    'ch' : {'name':'Calinski and Harabasz score'}}
     clustering_no_dimred = pd.read_csv('./results/{}.csv'.format(config['dataset']))
     clustering_pca = pd.read_csv('./results/{}_pca.csv'.format(config['dataset']))
     clustering_fa = pd.read_csv('./results/{}_fa.csv'.format(config['dataset']))
@@ -88,7 +90,8 @@ def make_plots(config, metric = 'sil'):
         subset = clustering_no_dimred.loc[(clustering_no_dimred['clusteringAlg'] == 'agg') & (clustering_no_dimred['linkage'] == clust_linkage)]
         plt.plot(subset['Number of clusters'], subset[metric], linestyle = 'solid', marker = 'o', label = 'Agg-'+clust_linkage)
     plt.grid(True)
-    plt.ylim(metrics_info[metric]['lim'])
+    if metric in ['sil', 'ari']:
+        plt.ylim(metrics_info[metric]['lim'])
     plt.xlabel('Clusters')
     plt.ylabel(metrics_info[metric]['name'])
     plt.legend()
@@ -100,19 +103,21 @@ def make_plots(config, metric = 'sil'):
         subset = clustering_pca.loc[(clustering_pca['clusteringAlg'] == 'agg') & (clustering_pca['linkage'] == clust_linkage)]
         plt.plot(subset['Number of clusters'], subset[metric], linestyle = 'solid', marker = 'o', label = 'Agg-'+clust_linkage)
     plt.grid(True)
-    plt.ylim(metrics_info[metric]['lim'])
+    if metric in ['sil', 'ari']:
+        plt.ylim(metrics_info[metric]['lim'])
     plt.xlabel('Clusters')
     plt.ylabel(metrics_info[metric]['name'])
     plt.legend()
     plt.subplot(1, 3, 3)
     plt.title('Factor Analysis')
-    subset_km = clustering_tsne.loc[clustering_tsne['clusteringAlg'] == 'km']
+    subset_km = clustering_fa.loc[clustering_fa['clusteringAlg'] == 'km']
     plt.plot(subset_km['Number of clusters'], subset_km[metric], linestyle='solid', marker='o', label='K-means')
     for clust_linkage in agg_linkage:
-        subset = clustering_tsne.loc[(clustering_tsne['clusteringAlg'] == 'agg') & (clustering_tsne['linkage'] == clust_linkage)]
+        subset = clustering_fa.loc[(clustering_fa['clusteringAlg'] == 'agg') & (clustering_fa['linkage'] == clust_linkage)]
         plt.plot(subset['Number of clusters'], subset[metric], linestyle = 'solid', marker = 'o', label = 'Agg-'+clust_linkage)
     plt.grid(True)
-    plt.ylim(metrics_info[metric]['lim'])
+    if metric in ['sil', 'ari']:
+        plt.ylim(metrics_info[metric]['lim'])
     plt.xlabel('Clusters')
     plt.ylabel(metrics_info[metric]['name'])
     plt.legend()

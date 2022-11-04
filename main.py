@@ -5,7 +5,9 @@ from sklearn.manifold import TSNE
 from visualize import plot_scores_2d, plot_scores_3d, plot_density, plot_loadings
 from kmeans import KMeans
 from sklearn.cluster import AgglomerativeClustering
+from sklearn.decomposition import FactorAnalysis
 from utils import evaluate_clustering_number, make_plots
+import numpy as np
 parser = argparse.ArgumentParser()
 
 ### run--> python main.py --dataset vote
@@ -13,9 +15,9 @@ parser.add_argument("--dataset", type=str, default='vote', choices=['vote', 'hyp
 parser.add_argument("--dimReduction", type=str, default='agg', choices=['pca', 'fa'])
 parser.add_argument("--num_dimensions", type=int, default=3)
 parser.add_argument("--clusteringAlg", type=str, default='agg', choices=['km', 'agg'])
-parser.add_argument("--num_clusters", default=2, type=int)
 parser.add_argument("--max_num_clusters", type=int, default=7, choices=range(2,100))
 parser.add_argument("--visualize_results", type=bool, default=False)
+parser.add_argument("--plot_scores_colored_by_cluster", type=bool, default=False)
 # For Agglomerative clustering parameters
 parser.add_argument("--affinity", type=str, default = 'euclidean', choices=['euclidean', 'cosine'])
 parser.add_argument("--linkage", type=str, default = 'ward', choices=['ward', 'complete', 'average', 'single'])
@@ -27,11 +29,11 @@ def configuration():
                 'dimReduction': con.dimReduction,
                 'num_dimensions': con.num_dimensions,
                 'clusteringAlg':con.clusteringAlg,
-                'num_clusters': con.num_clusters,
                 'affinity': con.affinity,
                 'linkage': con.linkage,
                 'max_num_clusters': con.max_num_clusters,
-                'visualize_results': con.visualize_results
+                'visualize_results': con.visualize_results,
+                'plot_scores_colored_by_cluster' : con.plot_scores_colored_by_cluster
              }
     return config
 
@@ -41,6 +43,8 @@ def main():
     if config['visualize_results']:
         make_plots(config, metric = 'sil')
         make_plots(config, metric = 'ari')
+        make_plots(config, metric = 'dbs')
+        make_plots(config, metric = 'ch')
         return
 
     ### load dataset
@@ -56,22 +60,27 @@ def main():
         if config['dataset'] == 'vote':
             # run evaluation of number of clusters
             cluster_no_dimred = KMeans(2).fit_predict(X.values)
+            np.save('./results/{}_{}.npy'.format(config['clusteringAlg'], config['dataset']), cluster_no_dimred)
         if config['dataset'] == 'hyp':
             cluster_no_dimred = KMeans(2).fit_predict(X.values)
+            np.save('./results/{}_{}.npy'.format(config['clusteringAlg'], config['dataset']), cluster_no_dimred)
 
     if config['clusteringAlg'] == 'agg':
         evaluate_clustering_number(config, X, Y)
         if config['dataset'] == 'vote':
             cluster_no_dimred = AgglomerativeClustering(n_clusters = 2, affinity='euclidean', linkage='complete').fit_predict(X.values)
+            np.save('./results/{}_{}.npy'.format(config['clusteringAlg'], config['dataset']), cluster_no_dimred)
         if config['dataset'] == 'hyp':
             cluster_no_dimred = AgglomerativeClustering(n_clusters = 2, affinity='euclidean', linkage='single').fit_predict(X.values)
+            np.save('./results/{}_{}.npy'.format(config['clusteringAlg'], config['dataset']), cluster_no_dimred)
 
     best_configs = {
         'vote':{'pca':{'kmeans':[3], 'agg':[2, 'complete']},
+                'fa': {'kmeans': [3], 'agg': [2, 'complete']},
                 'tsne':{'kmeans':[2],'agg':[2, 'ward']}},
-        # revisar hyp pq no está bien
         'hyp': {'pca': {'kmeans': [3], 'agg': [2, 'complete']},
-                 'tsne': {'kmeans': [2], 'agg': [2, 'ward']}}
+                'fa': {'kmeans': [3], 'agg': [2, 'complete']},
+                'tsne': {'kmeans': [2], 'agg': [2, 'ward']}}
     }
 
     # perform dimensionality reduction
@@ -82,10 +91,12 @@ def main():
         evaluate_clustering_number(config, scores, Y, dim_reduc=True)
         if config['clusteringAlg'] == 'km':
             cluster_dimred = KMeans(best_configs[config['dataset']]['pca']['kmeans'][0]).fit_predict(scores)
+            np.save('./results/pca_{}_{}.npy'.format(config['clusteringAlg'], config['dataset']), cluster_dimred)
         if config['clusteringAlg'] == 'agg':
             cluster_dimred = AgglomerativeClustering(n_clusters=best_configs[config['dataset']]['pca']['agg'][0],
                                                      affinity='euclidean',
                                                      linkage=best_configs[config['dataset']]['pca']['agg'][1]).fit_predict(scores)
+            np.save('./results/pca_{}_{}.npy'.format(config['clusteringAlg'], config['dataset']), cluster_dimred)
 
         loadings = pca.loadings
         plot_loadings(loadings, X.columns, savefig = './plots/{}/pca/'.format(config['dataset']), dim_1=1, dim_2=2)
@@ -104,16 +115,22 @@ def main():
             plot_scores_2d(scores, Y.replace(replace_hyp).values, savefig='./plots/{}/pca/target_'.format(config['dataset']), dim_1=2, dim_2=3)
             plot_density(scores, Y.replace(replace_hyp).values, dim = 1, savefig = './plots/{}/pca/target_'.format(config['dataset']))
             plot_density(scores, Y.replace(replace_hyp).values, dim = 2, savefig='./plots/{}/pca/target_'.format(config['dataset']))
-        # plot scores colored by cluster
-        plot_scores_2d(scores, cluster_no_dimred, savefig='./plots/{}/pca/{}_no_dimred_'.format(config['dataset'], config['clusteringAlg']))
-        plot_scores_2d(scores, cluster_dimred, savefig='./plots/{}/pca/{}_dimred_'.format(config['dataset'], config['clusteringAlg']))
-        # plot density colored by cluster
-        plot_density(scores, cluster_no_dimred, dim=1, savefig='./plots/{}/pca/{}_no_dimred_'.format(config['dataset'], config['clusteringAlg']))
-        plot_density(scores, cluster_dimred, dim=1, savefig='./plots/{}/pca/{}_dimred_'.format(config['dataset'], config['clusteringAlg']))
 
     if config['dimReduction'] == 'fa':
-        pass
+        fa = FactorAnalysis(config['num_dimensions'], random_state=0)
+        scores = fa.fit_transform(X.values)
+        # perform clustering analysis
+        evaluate_clustering_number(config, scores, Y, dim_reduc=True)
+        if config['clusteringAlg'] == 'km':
+            cluster_dimred = KMeans(best_configs[config['dataset']]['fa']['kmeans'][0]).fit_predict(scores)
+            np.save('./results/fa_{}_{}.npy'.format(config['clusteringAlg'], config['dataset']), cluster_dimred)
+        if config['clusteringAlg'] == 'agg':
+            cluster_dimred = AgglomerativeClustering(n_clusters=best_configs[config['dataset']]['fa']['agg'][0],
+                                                     affinity='euclidean',
+                                                     linkage=best_configs[config['dataset']]['fa']['agg'][1]).fit_predict(scores)
+            np.save('./results/fa_{}_{}.npy'.format(config['clusteringAlg'], config['dataset']), cluster_dimred)
 
+    # compute T-SNE
     X_embedded = TSNE(n_components=config['num_dimensions'], learning_rate='auto', init = 'random', perplexity = 50,
                       random_state = 34).fit_transform(X.values)
 
@@ -131,12 +148,23 @@ def main():
         plot_density(X_embedded, Y.replace(replace_hyp).values, dim = 1, savefig = './plots/{}/tsne/target_'.format(config['dataset']), tsne=True)
         plot_density(X_embedded, Y.replace(replace_hyp).values, dim = 2, savefig='./plots/{}/tsne/target_'.format(config['dataset']), tsne=True)
 
-    # plot embeddings colored by cluster
-    plot_scores_2d(X_embedded, cluster_no_dimred, savefig='./plots/{}/tsne/{}_no_dimred_'.format(config['dataset'], config['clusteringAlg']), tsne = True)
-    plot_scores_2d(X_embedded, cluster_dimred, savefig='./plots/{}/tsne/{}_dimred_'.format(config['dataset'], config['clusteringAlg']), tsne = True)
-    # plot density colored by cluster
-    plot_density(X_embedded, cluster_no_dimred, dim=1, savefig='./plots/{}/tsne/{}_no_dimred_'.format(config['dataset'], config['clusteringAlg']), tsne = True)
-    plot_density(X_embedded, cluster_dimred, dim=1, savefig='./plots/{}/tsne/{}_dimred_'.format(config['dataset'], config['clusteringAlg']), tsne = True)
+    if config['plot_scores_colored_by_cluster']:
+        # PCA PLOTS AND T-SNE PLOTS COLORED BY CLUSTER
+        pca = PCA(X.values, config['num_dimensions'], savefig='./plots/{}/pca/'.format(config['dataset']), verbose=False)
+        scores = pca.fit_transform()
+
+        km = np.load('./results/km_{}.npy'.format(config['dataset']))
+        agg = np.load('./results/agg_{}.npy'.format(config['dataset']))
+        pca_km = np.load('./results/pca_km_{}.npy'.format(config['dataset']))
+        pca_agg = np.load('./results/pca_agg_{}.npy'.format(config['dataset']))
+        fa_km = np.load('./results/fa_km_{}.npy'.format(config['dataset']))
+        fa_agg = np.load('./results/fa_agg_{}.npy'.format(config['dataset']))
+
+        for (cluster, name) in [(km, 'km'), (agg, 'agg'), (pca_km, 'pca_km'), (pca_agg, 'pca_agg'), (fa_km, 'fa_km'), (fa_agg, 'fa_agg')]:
+            plot_scores_2d(X_embedded, cluster, savefig='./plots/{}/tsne/{}_'.format(config['dataset'], name), tsne=True)
+            plot_scores_2d(scores, cluster, savefig='./plots/{}/pca/{}_'.format(config['dataset'], name), tsne=False)
+            plot_density(X_embedded, cluster, dim=1, savefig='./plots/{}/tsne/{}_'.format(config['dataset'], name), tsne=True)
+            plot_density(scores, cluster, dim=1, savefig='./plots/{}/pca/{}_'.format(config['dataset'], name), tsne=False)
 
 if __name__ == '__main__':
 	main()
