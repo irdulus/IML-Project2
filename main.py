@@ -13,6 +13,7 @@ parser = argparse.ArgumentParser()
 ### run--> python main.py --dataset vote
 parser.add_argument("--dataset", type=str, default='vote', choices=['vote', 'hyp'])
 parser.add_argument("--dimReduction", type=str, default='agg', choices=['pca', 'fa'])
+parser.add_argument("--tsne", type=bool, default=True)
 parser.add_argument("--num_dimensions", type=int, default=3)
 parser.add_argument("--clusteringAlg", type=str, default='agg', choices=['km', 'agg'])
 parser.add_argument("--max_num_clusters", type=int, default=7, choices=range(2,100))
@@ -33,7 +34,8 @@ def configuration():
                 'linkage': con.linkage,
                 'max_num_clusters': con.max_num_clusters,
                 'visualize_results': con.visualize_results,
-                'plot_scores_colored_by_cluster' : con.plot_scores_colored_by_cluster
+                'plot_scores_colored_by_cluster' : con.plot_scores_colored_by_cluster,
+                'tsne':con.tsne
              }
     return config
 
@@ -86,16 +88,16 @@ def main():
     # perform dimensionality reduction
     if config['dimReduction'] == 'pca':
         pca = PCA(X.values, config['num_dimensions'], savefig = './plots/{}/pca/'.format(config['dataset']), verbose = True)
-        scores = pca.fit_transform()
+        scores, n_com_90_ex_var = pca.fit_transform()
         # perform clustering analysis
-        evaluate_clustering_number(config, scores, Y, dim_reduc=True)
+        evaluate_clustering_number(config, scores[:,0:n_com_90_ex_var], Y, dim_reduc=True)
         if config['clusteringAlg'] == 'km':
-            cluster_dimred = KMeans(best_configs[config['dataset']]['pca']['kmeans'][0]).fit_predict(scores)
+            cluster_dimred = KMeans(best_configs[config['dataset']]['pca']['kmeans'][0]).fit_predict(scores[:,0:n_com_90_ex_var])
             np.save('./results/pca_{}_{}.npy'.format(config['clusteringAlg'], config['dataset']), cluster_dimred)
         if config['clusteringAlg'] == 'agg':
             cluster_dimred = AgglomerativeClustering(n_clusters=best_configs[config['dataset']]['pca']['agg'][0],
                                                      affinity='euclidean',
-                                                     linkage=best_configs[config['dataset']]['pca']['agg'][1]).fit_predict(scores)
+                                                     linkage=best_configs[config['dataset']]['pca']['agg'][1]).fit_predict(scores[:,0:n_com_90_ex_var])
             np.save('./results/pca_{}_{}.npy'.format(config['clusteringAlg'], config['dataset']), cluster_dimred)
 
         loadings = pca.loadings
@@ -130,27 +132,28 @@ def main():
                                                      linkage=best_configs[config['dataset']]['fa']['agg'][1]).fit_predict(scores)
             np.save('./results/fa_{}_{}.npy'.format(config['clusteringAlg'], config['dataset']), cluster_dimred)
 
-    # compute T-SNE
-    X_embedded = TSNE(n_components=config['num_dimensions'], learning_rate='auto', init = 'random', perplexity = 50,
-                      random_state = 34).fit_transform(X.values)
+    if config['tsne']:
+        # compute T-SNE
+        X_embedded = TSNE(n_components=config['num_dimensions'], learning_rate='auto', init = 'random', perplexity = 50,
+                          random_state = 34).fit_transform(X.values)
 
-    if config['dataset'] == 'vote':
-        replace_vote = {0: 'republican', 1: 'democrat'}
-        plot_scores_2d(X_embedded, Y.replace(replace_vote).values, savefig = './plots/{}/tsne/target_'.format(config['dataset']), tsne=True)
-        plot_density(X_embedded, Y.replace(replace_vote).values, dim = 1, savefig = './plots/{}/tsne/target_'.format(config['dataset']), tsne=True)
-        plot_density(X_embedded, Y.replace(replace_vote).values, dim = 2, savefig='./plots/{}/tsne/target_'.format(config['dataset']), tsne=True)
-    elif config['dataset'] == 'hyp':
-        replace_hyp = {0:'negative', 1:'compensated_hypothyroid', 2:'primary_hypothyroid', 3:'secondary_hypothyroid'}
-        plot_scores_3d(X_embedded, Y.replace(replace_hyp).values, savefig='./plots/{}/tsne/target_'.format(config['dataset']), tsne=True)
-        plot_scores_2d(X_embedded, Y.replace(replace_hyp).values, savefig = './plots/{}/tsne/target_'.format(config['dataset']), tsne=True)
-        plot_scores_2d(X_embedded, Y.replace(replace_hyp).values, savefig='./plots/{}/tsne/target_'.format(config['dataset']), dim_1=1, dim_2=3, tsne=True)
-        plot_scores_2d(X_embedded, Y.replace(replace_hyp).values, savefig='./plots/{}/tsne/target_'.format(config['dataset']), dim_1=2, dim_2=3, tsne=True)
-        plot_density(X_embedded, Y.replace(replace_hyp).values, dim = 1, savefig = './plots/{}/tsne/target_'.format(config['dataset']), tsne=True)
-        plot_density(X_embedded, Y.replace(replace_hyp).values, dim = 2, savefig='./plots/{}/tsne/target_'.format(config['dataset']), tsne=True)
+        if config['dataset'] == 'vote':
+            replace_vote = {0: 'republican', 1: 'democrat'}
+            plot_scores_2d(X_embedded, Y.replace(replace_vote).values, savefig = './plots/{}/tsne/target_'.format(config['dataset']), tsne=True)
+            plot_density(X_embedded, Y.replace(replace_vote).values, dim = 1, savefig = './plots/{}/tsne/target_'.format(config['dataset']), tsne=True)
+            plot_density(X_embedded, Y.replace(replace_vote).values, dim = 2, savefig='./plots/{}/tsne/target_'.format(config['dataset']), tsne=True)
+        elif config['dataset'] == 'hyp':
+            replace_hyp = {0:'negative', 1:'compensated_hypothyroid', 2:'primary_hypothyroid', 3:'secondary_hypothyroid'}
+            plot_scores_3d(X_embedded, Y.replace(replace_hyp).values, savefig='./plots/{}/tsne/target_'.format(config['dataset']), tsne=True)
+            plot_scores_2d(X_embedded, Y.replace(replace_hyp).values, savefig = './plots/{}/tsne/target_'.format(config['dataset']), tsne=True)
+            plot_scores_2d(X_embedded, Y.replace(replace_hyp).values, savefig='./plots/{}/tsne/target_'.format(config['dataset']), dim_1=1, dim_2=3, tsne=True)
+            plot_scores_2d(X_embedded, Y.replace(replace_hyp).values, savefig='./plots/{}/tsne/target_'.format(config['dataset']), dim_1=2, dim_2=3, tsne=True)
+            plot_density(X_embedded, Y.replace(replace_hyp).values, dim = 1, savefig = './plots/{}/tsne/target_'.format(config['dataset']), tsne=True)
+            plot_density(X_embedded, Y.replace(replace_hyp).values, dim = 2, savefig='./plots/{}/tsne/target_'.format(config['dataset']), tsne=True)
 
-    if config['plot_scores_colored_by_cluster']:
+    if config['plot_scores_colored_by_cluster'] is True and config['tsne'] is True:
         # PCA PLOTS AND T-SNE PLOTS COLORED BY CLUSTER
-        pca = PCA(X.values, config['num_dimensions'], savefig='./plots/{}/pca/'.format(config['dataset']), verbose=False)
+        pca, _ = PCA(X.values, config['num_dimensions'], savefig='./plots/{}/pca/'.format(config['dataset']), verbose=False)
         scores = pca.fit_transform()
 
         km = np.load('./results/km_{}.npy'.format(config['dataset']))

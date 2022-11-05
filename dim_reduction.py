@@ -65,21 +65,42 @@ class PCA:
 
         ## eigenvalues plot
         self.__plot_eigenvalues(self.tuples_eig)
+        n_com_90_ex_var = self.__plot_explained_variance(self.tuples_eig)
         ## reconstructed data matrix
         X_pred = self.__reconstruct()
         error = self.X - X_pred
         scr = np.sum(error**2, axis = 1) # residual error sum of squares
         spe = np.sqrt(scr) # sum of predicted errors
         self.__plot_spe(scr, spe)
-        return self.scores
+        return self.scores, n_com_90_ex_var
 
     def __reconstruct(self):
         return (self.scores @ self.loadings.T) + self.mean_vector
 
+    def __plot_explained_variance(self, tuples_eig):
+        total_variance = sum([i[0] for i in tuples_eig])
+        var_explained = [(i[0] / total_variance) * 100 for i in tuples_eig]
+        cumulative_var_exp = np.cumsum(var_explained)
+        # select 90% explained variance
+        n_com_90_ex_var = [index for index, v in enumerate(cumulative_var_exp) if v >= 90][0]
+        plt.style.use('seaborn-whitegrid')
+        fig = plt.figure(figsize=(12, 7.5))
+        plt.bar(range(len(tuples_eig)), var_explained, alpha=0.85, align='center', label='Explained variance')
+        plt.step(range(len(tuples_eig)), cumulative_var_exp, where='mid', label='Cumulative Explained variance')
+        plt.axvline(n_com_90_ex_var, color='r')
+        plt.axhline(90, color='r')
+        plt.xticks(list(range(len(tuples_eig))))
+        plt.xlabel('Principal components')
+        plt.ylabel('Explained variance')
+        plt.title('Explained variance')
+        if self.savefig is not None:
+            plt.savefig(self.savefig + 'explained_variance_pca.jpg', dpi = 350, bbox_inches='tight')
+        plt.close()
+        return n_com_90_ex_var
     def __plot_eigenvalues(self, tuples_eig):
         eigenvalues_plot = [i[0] for i in tuples_eig]
         plt.style.use('seaborn-whitegrid')
-        fig = plt.figure(figsize=(15,7.5))
+        fig = plt.figure(figsize=(12,7.5))
         principal_components = list(range(1, len(eigenvalues_plot) + 1))
         plt.bar(principal_components, eigenvalues_plot, alpha=0.85, align = 'center')
         plt.axhline(y = 1, color = 'r')
