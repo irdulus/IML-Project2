@@ -67,15 +67,15 @@ class PCA:
         self.__plot_eigenvalues(self.tuples_eig)
         n_com_90_ex_var = self.__plot_explained_variance(self.tuples_eig)
         ## reconstructed data matrix
-        X_pred = self.__reconstruct()
+        X_pred = self.__reconstruct(n_com_90_ex_var)
         error = self.X - X_pred
         scr = np.sum(error**2, axis = 1) # residual error sum of squares
         spe = np.sqrt(scr) # sum of predicted errors
         self.__plot_spe(scr, spe)
         return self.scores, n_com_90_ex_var
 
-    def __reconstruct(self):
-        return (self.scores @ self.loadings.T) + self.mean_vector
+    def __reconstruct(self, n_com_90_ex_var):
+        return (self.scores[:,:n_com_90_ex_var] @ self.loadings.T) + self.mean_vector
 
     def __plot_explained_variance(self, tuples_eig):
         total_variance = sum([i[0] for i in tuples_eig])
