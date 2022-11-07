@@ -81,7 +81,7 @@ def make_plots(config, metric = 'sil'):
     clustering_fa = pd.read_csv('./results/{}_fa.csv'.format(config['dataset']))
     alg = ['km', 'agg']
     agg_linkage = ['single', 'complete', 'average', 'ward']
-    fig = plt.figure(figsize=(20,7))
+    fig = plt.figure(figsize=(20,4.5))
     plt.subplot(1, 3, 1)
     plt.title('No dimensionality reduction')
     subset_km = clustering_no_dimred.loc[clustering_no_dimred['clusteringAlg'] == 'km']

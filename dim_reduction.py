@@ -84,7 +84,7 @@ class PCA:
         # select 90% explained variance
         n_com_90_ex_var = [index for index, v in enumerate(cumulative_var_exp) if v >= 90][0]
         plt.style.use('seaborn-whitegrid')
-        fig = plt.figure(figsize=(12, 7.5))
+        fig = plt.figure(figsize=(9, 7))
         plt.bar(range(len(tuples_eig)), var_explained, alpha=0.85, align='center', label='Explained variance')
         plt.step(range(len(tuples_eig)), cumulative_var_exp, where='mid', label='Cumulative Explained variance')
         plt.axvline(n_com_90_ex_var, color='r')
@@ -100,7 +100,7 @@ class PCA:
     def __plot_eigenvalues(self, tuples_eig):
         eigenvalues_plot = [i[0] for i in tuples_eig]
         plt.style.use('seaborn-whitegrid')
-        fig = plt.figure(figsize=(12,7.5))
+        fig = plt.figure(figsize=(9,7))
         principal_components = list(range(1, len(eigenvalues_plot) + 1))
         plt.bar(principal_components, eigenvalues_plot, alpha=0.85, align = 'center')
         plt.axhline(y = 1, color = 'r')
@@ -119,7 +119,7 @@ class PCA:
         chi2lim = ncx2.ppf(0.99, h, g)
         # plot
         plt.style.use('seaborn-whitegrid')
-        fig = plt.figure(figsize=(15, 7.5))
+        fig = plt.figure(figsize=(9, 7))
         plt.plot(range(spe.shape[0]), spe)
         plt.axhline(y=np.sqrt(chi2lim), color='r', label = '$\chi2$ lim')
         plt.ylabel('SPE')
