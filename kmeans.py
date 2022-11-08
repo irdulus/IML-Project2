@@ -9,7 +9,7 @@ class KMeans():
         x = np.array(x, dtype=np.float32)
         k = self.n_clusters
         n = np.size(x, 0)
-        np.random.seed(5)
+        np.random.seed(8)
 
         cluster_centers = x[np.random.choice(range(0, n), k, False)]
         clusters = np.empty((k, 0))

@@ -10,6 +10,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\results\hyp_fa.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\results\hyp_pca.csv">
           <value>
             <Attribute>

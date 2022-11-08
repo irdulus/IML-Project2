@@ -110,7 +110,7 @@ def make_plots(config, metric = 'sil'):
     plt.ylabel(metrics_info[metric]['name'])
     plt.legend(fontsize=10)
     plt.subplot(1, 3, 3)
-    plt.title('Factor Analysis')
+    plt.title('Feature Agglomeration')
     subset_km = clustering_fa.loc[clustering_fa['clusteringAlg'] == 'km']
     plt.plot(subset_km['Number of clusters'], subset_km[metric], linestyle='solid', marker='o', label='K-means')
     for clust_linkage in agg_linkage:

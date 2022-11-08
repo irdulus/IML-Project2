@@ -5,7 +5,7 @@ from sklearn.manifold import TSNE
 from visualize import plot_scores_2d, plot_scores_3d, plot_density, plot_loadings
 from kmeans import KMeans
 from sklearn.cluster import AgglomerativeClustering
-from sklearn.decomposition import FactorAnalysis
+from sklearn.cluster import FeatureAgglomeration
 from utils import evaluate_clustering_number, make_plots
 import numpy as np
 parser = argparse.ArgumentParser()
@@ -119,7 +119,7 @@ def main():
             plot_density(scores, Y.replace(replace_hyp).values, dim = 2, savefig='./plots/{}/pca/target_'.format(config['dataset']))
 
     if config['dimReduction'] == 'fa':
-        fa = FactorAnalysis(config['num_dimensions'], random_state=0)
+        fa = FeatureAgglomeration(n_clusters=config['num_dimensions'])
         scores = fa.fit_transform(X.values)
         # perform clustering analysis
         evaluate_clustering_number(config, scores, Y, dim_reduc=True)
