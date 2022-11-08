@@ -5,12 +5,14 @@ import seaborn as sns
 def plot_loadings(loadings, columns, savefig = None, dim_1=1, dim_2=2):
     colors = ['#689F38', '#039BE5', '#FF6F00', '#F44336', '#26C6DA']
     plt.style.use('seaborn-whitegrid')
+    plt.rcParams.update({'font.size': 22})
     fig, ax = plt.subplots(figsize=(15, 10))
     for i, txt in enumerate(columns):
-        ax.annotate(txt, (loadings[i, dim_1-1], loadings[i, dim_2-1]))
+        ax.annotate(txt, (loadings[i, dim_1-1], loadings[i, dim_2-1]), size = 13)
     plt.grid(True)
     plt.title('Loadings plot')
-
+    plt.axhline(c='black', alpha=0.2)
+    plt.axvline(c='black', alpha=0.2)
     plt.xlabel('Principal component {}'.format(dim_1))
     plt.ylabel('Principal component {}'.format(dim_2))
     plt.xlim(-1, 1)
@@ -22,6 +24,7 @@ def plot_loadings(loadings, columns, savefig = None, dim_1=1, dim_2=2):
 def plot_scores_2d(scores, Y, savefig = None, dim_1=1, dim_2=2, tsne=False):
     colors = ['#689F38', '#039BE5', '#FF6F00', '#F44336', '#26C6DA']
     plt.style.use('seaborn-whitegrid')
+    plt.rcParams.update({'font.size': 22})
     fig = plt.figure(figsize=(15, 10))
     plt.axhline(c='black', alpha=0.2)
     plt.axvline(c='black', alpha=0.2)
@@ -41,12 +44,13 @@ def plot_scores_3d(scores, Y, savefig = None, dim_1=1, dim_2=2, dim_3=3, tsne=Fa
               '#00796B', '#304FFE', '#6D4C41', '#AA00FF']
     plt.style.use('seaborn-whitegrid')
     fig = plt.figure(figsize=(15, 10))
+    plt.rcParams.update({'font.size': 15})
     ax = fig.add_subplot(projection="3d")
     for i, group in enumerate(np.unique(Y)):
         ax.scatter3D(scores[np.where(Y == group),dim_1 - 1], scores[np.where(Y == group),dim_2 - 1], scores[np.where(Y == group),dim_3 - 1],
                     alpha = 0.82, c=colors[i], label = group)
     plt.grid(True)
-    plt.title('PCA Space')
+    plt.title('PCA Space' if tsne is False else 'T-sne manifold')
     plt.legend()
     ax.set_xlabel('Principal component {}'.format(dim_1) if tsne is False else 'Embedding {}'.format(dim_1))
     ax.set_ylabel('Principal component {}'.format(dim_2) if tsne is False else 'Embedding {}'.format(dim_2))
@@ -60,6 +64,7 @@ def plot_density(scores, Y, savefig = None, dim=1, tsne=False):
     colors = ['#689F38', '#039BE5', '#FF6F00', '#F44336', '#26C6DA']
     plt.style.use('seaborn-whitegrid')
     fig = plt.figure(figsize=(20, 8))
+    plt.rcParams.update({'font.size': 22})
     plt.axhline(c='black', alpha=0.2)
     plt.axvline(c='black', alpha=0.2)
     for i, group in enumerate(np.unique(Y)):

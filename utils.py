@@ -81,7 +81,8 @@ def make_plots(config, metric = 'sil'):
     clustering_fa = pd.read_csv('./results/{}_fa.csv'.format(config['dataset']))
     alg = ['km', 'agg']
     agg_linkage = ['single', 'complete', 'average', 'ward']
-    fig = plt.figure(figsize=(20,4.5))
+    fig = plt.figure(figsize=(25,5))
+    plt.rcParams.update({'font.size': 20})
     plt.subplot(1, 3, 1)
     plt.title('No dimensionality reduction')
     subset_km = clustering_no_dimred.loc[clustering_no_dimred['clusteringAlg'] == 'km']
@@ -94,7 +95,7 @@ def make_plots(config, metric = 'sil'):
         plt.ylim(metrics_info[metric]['lim'])
     plt.xlabel('Clusters')
     plt.ylabel(metrics_info[metric]['name'])
-    plt.legend()
+    plt.legend(fontsize=10)
     plt.subplot(1, 3, 2)
     plt.title('PCA')
     subset_km = clustering_pca.loc[clustering_pca['clusteringAlg'] == 'km']
@@ -107,7 +108,7 @@ def make_plots(config, metric = 'sil'):
         plt.ylim(metrics_info[metric]['lim'])
     plt.xlabel('Clusters')
     plt.ylabel(metrics_info[metric]['name'])
-    plt.legend()
+    plt.legend(fontsize=10)
     plt.subplot(1, 3, 3)
     plt.title('Factor Analysis')
     subset_km = clustering_fa.loc[clustering_fa['clusteringAlg'] == 'km']
@@ -120,6 +121,6 @@ def make_plots(config, metric = 'sil'):
         plt.ylim(metrics_info[metric]['lim'])
     plt.xlabel('Clusters')
     plt.ylabel(metrics_info[metric]['name'])
-    plt.legend()
+    plt.legend(fontsize=10)
     plt.savefig('./plots/clustering_comparison_{}_{}.jpg'.format(config['dataset'], metric), dpi=350, bbox_inches='tight')
     plt.close()
