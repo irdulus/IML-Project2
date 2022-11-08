@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
+from scipy.io import arff
+import pandas as pd
 
 def plot_loadings(loadings, columns, savefig = None, dim_1=1, dim_2=2):
     colors = ['#689F38', '#039BE5', '#FF6F00', '#F44336', '#26C6DA']
@@ -76,4 +78,18 @@ def plot_density(scores, Y, savefig = None, dim=1, tsne=False):
     plt.xlabel('Principal component {}'.format(dim) if tsne is False else 'Embedding {}'.format(dim))
     if savefig is not None:
         plt.savefig(savefig + 'density_{}.jpg'.format(dim), dpi=350, bbox_inches='tight')
+    plt.close()
+
+def plot_heat(config, data, scores, savefig = None):
+    file_name = './datasets/' + data + '.arff'
+    data = arff.loadarff(file_name)
+    df = pd.DataFrame(data[0])
+
+    plt.figure(figsize=(10, 10))
+    sns.heatmap(scores, cbar=True, annot=True, square=True, fmt='.2f', annot_kws={'size':12}, yticklabels=df.columns, xticklabels=df.columns)
+    plt.title('Covariance matrix')
+    plt.tight_layout()
+
+    if savefig is not None:
+        plt.savefig(savefig + 'heat_{}.jpg'.format(config['dataset']), dpi=350, bbox_inches='tight')
     plt.close()
