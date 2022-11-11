@@ -1,0 +1,6 @@
+Number of clusters,ari,sil,dbs,ch,dataset,clusteringAlg,affinity,linkage
+2,0.079,0.504,0.772,894.052,vehi,agg,euclidean,ward
+3,0.084,0.386,0.953,718.146,vehi,agg,euclidean,ward
+4,0.091,0.409,0.786,786.32,vehi,agg,euclidean,ward
+5,0.068,0.326,0.867,743.88,vehi,agg,euclidean,ward
+6,0.064,0.32,0.883,759.936,vehi,agg,euclidean,ward
