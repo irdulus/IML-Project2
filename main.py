@@ -14,7 +14,7 @@ parser = argparse.ArgumentParser()
 ### run--> python main.py --dataset vote
 parser.add_argument("--dataset", type=str, default='vote', choices=['vote', 'hyp', 'vehi'])
 parser.add_argument("--dimReduction", type=str, default='pca', choices=['pca', 'fa',"pca_sk","ipca"])
-parser.add_argument("--tsne", type=bool, default= False)
+parser.add_argument("--tsne", type=bool, default= True)
 parser.add_argument("--num_dimensions", type=int, default=3)
 parser.add_argument("--clusteringAlg", type=str, default='agg', choices=['km', 'agg'])
 parser.add_argument("--max_num_clusters", type=int, default=7, choices=range(2,100))
