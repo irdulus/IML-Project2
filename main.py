@@ -6,14 +6,15 @@ from visualize import plot_scores_2d, plot_scores_3d, plot_density, plot_loading
 from kmeans import KMeans
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.cluster import FeatureAgglomeration
+import  sklearn.decomposition as  decomposition
 from utils import evaluate_clustering_number, make_plots
 import numpy as np
 parser = argparse.ArgumentParser()
 
 ### run--> python main.py --dataset vote
 parser.add_argument("--dataset", type=str, default='vote', choices=['vote', 'hyp', 'vehi'])
-parser.add_argument("--dimReduction", type=str, default='pca', choices=['pca', 'fa'])
-parser.add_argument("--tsne", type=bool, default=True)
+parser.add_argument("--dimReduction", type=str, default='pca', choices=['pca', 'fa',"pca_sk","ipca"])
+parser.add_argument("--tsne", type=bool, default= False)
 parser.add_argument("--num_dimensions", type=int, default=3)
 parser.add_argument("--clusteringAlg", type=str, default='agg', choices=['km', 'agg'])
 parser.add_argument("--max_num_clusters", type=int, default=7, choices=range(2,100))
@@ -86,16 +87,16 @@ def main():
             np.save('./results/{}_{}.npy'.format(config['clusteringAlg'], config['dataset']), cluster_no_dimred)
 
     best_configs = {
-        'vote':{'pca':{'kmeans':[3], 'agg':[2, 'complete']},
-                'fa': {'kmeans': [3], 'agg': [2, 'complete']},
-                'tsne':{'kmeans':[2],'agg':[2, 'ward']}},
+        'vote': {'pca': {'kmeans': [3], 'agg': [2, 'complete']},
+                 'pca_sk': {'kmeans': [3], 'agg': [2, 'complete']},
+                 'ipca': {'kmeans': [3], 'agg': [2, 'complete']},
+                 'fa': {'kmeans': [3], 'agg': [2, 'complete']},
+                 'tsne': {'kmeans': [2], 'agg': [2, 'ward']}},
         'hyp': {'pca': {'kmeans': [3], 'agg': [2, 'complete']},
+                'pca_sk': {'kmeans': [3], 'agg': [2, 'complete']},
+                'ipca': {'kmeans': [3], 'agg': [2, 'complete']},
                 'fa': {'kmeans': [3], 'agg': [2, 'complete']},
-                'tsne': {'kmeans': [2], 'agg': [2, 'ward']}},
-        'vehi': {'pca': {'kmeans': [3], 'agg': [2, 'complete']},
-                'fa': {'kmeans': [3], 'agg': [2, 'complete']},
-                'pcasklearn': {'kmeans': [3], 'agg': [2, 'complete']},
-                'pcaincremental': {'kmeans': [3], 'agg': [2, 'complete']}}
+                'tsne': {'kmeans': [2], 'agg': [2, 'ward']}}
     }
 
     # perform dimensionality reduction
@@ -150,20 +151,47 @@ def main():
                                                      linkage=best_configs[config['dataset']]['fa']['agg'][1]).fit_predict(scores)
             np.save('./results/fa_{}_{}.npy'.format(config['clusteringAlg'], config['dataset']), cluster_dimred)
 
-    if config['dimReduction'] == 'sklearnpca':
-        #fa = FeatureAgglomeration(n_clusters=config['num_dimensions']) PCA SKLEARN .90
-        scores = fa.fit_transform(X.values)
-        # perform clustering analysis
-        evaluate_clustering_number(config, scores, Y, dim_reduc=True)
+    if config['dimReduction'] == 'pca_sk':
+        pca_sk = decomposition.PCA()
+        scores = pca_sk.fit_transform(X.values)
+        cumulative_var_exp = np.cumsum(pca_sk.explained_variance_ratio_) * 100
+        n_com_90_ex_var = [index for index, v in enumerate(cumulative_var_exp) if v >= 90][0]
+        evaluate_clustering_number(config, scores[:, 0:n_com_90_ex_var], Y, dim_reduc=True)
 
-    if config['dimReduction'] == 'incrementalpca':
-        #fa = FeatureAgglomeration(n_clusters=config['num_dimensions']) Incremental PCA
-        scores = fa.fit_transform(X.values)
-        # perform clustering analysis
-        evaluate_clustering_number(config, scores, Y, dim_reduc=True)
+        if config['clusteringAlg'] == 'km':
+            cluster_dimred = KMeans(best_configs[config['dataset']]['pca_sk']['kmeans'][0]).fit_predict(
+                scores[:, 0:n_com_90_ex_var])
+            np.save('./results/pca_sk_{}_{}.npy'.format(config['clusteringAlg'], config['dataset']), cluster_dimred)
+
+        if config['clusteringAlg'] == 'agg':
+            cluster_dimred = AgglomerativeClustering(n_clusters=best_configs[config['dataset']]['pca_sk']['agg'][0],
+                                                     affinity='euclidean',
+                                                     linkage=best_configs[config['dataset']]['pca_sk']['agg'][
+                                                         1]).fit_predict(scores[:, 0:n_com_90_ex_var])
+            np.save('./results/pca_sk_{}_{}.npy'.format(config['clusteringAlg'], config['dataset']), cluster_dimred)
 
 
-    if config['tsne']:
+    if config['dimReduction'] == 'ipca':
+        ipca = decomposition.IncrementalPCA()
+        scores = ipca.fit_transform(X.values)
+
+        cumulative_var_exp = np.cumsum(ipca.explained_variance_ratio_) * 100
+        n_com_90_ex_var = [index for index, v in enumerate(cumulative_var_exp) if v >= 90][0]
+        evaluate_clustering_number(config, scores[:, 0:n_com_90_ex_var], Y, dim_reduc=True)
+
+        if config['clusteringAlg'] == 'km':
+            cluster_dimred = KMeans(best_configs[config['dataset']]['ipca']['kmeans'][0]).fit_predict(
+                scores[:, 0:n_com_90_ex_var])
+            np.save('./results/ipca_{}_{}.npy'.format(config['clusteringAlg'], config['dataset']), cluster_dimred)
+
+        if config['clusteringAlg'] == 'agg':
+            cluster_dimred = AgglomerativeClustering(n_clusters=best_configs[config['dataset']]['ipca']['agg'][0],
+                                                     affinity='euclidean',
+                                                     linkage=best_configs[config['dataset']]['ipca']['agg'][
+                                                         1]).fit_predict(scores[:, 0:n_com_90_ex_var])
+            np.save('./results/ipca_{}_{}.npy'.format(config['clusteringAlg'], config['dataset']), cluster_dimred)
+
+    if config['tsne'] is True:
         # compute T-SNE
         X_embedded = TSNE(n_components=config['num_dimensions'], learning_rate='auto', init = 'random', perplexity = 50,
                           random_state = 34).fit_transform(X.values)
